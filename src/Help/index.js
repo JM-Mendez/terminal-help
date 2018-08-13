@@ -4,11 +4,11 @@
  * terminal-menu
  * Copyright(c) 2015-2015 Harminder Virk
  * MIT Licensed
-*/
+ */
 
 const colors = require('colors')
-let Help = exports = module.exports = {}
-
+let Help = (exports = module.exports = {})
+const log = console.log
 /**
  * @description returns max length by scanning the
  * biggest option and returning it's string length
@@ -18,10 +18,10 @@ let Help = exports = module.exports = {}
  * @return {Number}
  * @private
  */
-const _maxLength = function (options, key) {
+const _maxLength = function(options, key) {
   let max = 0
-  options.forEach(function (item) {
-    max = (item[key] && item[key].length > max) ? item[key].length : max
+  options.forEach(function(item) {
+    max = item[key] && item[key].length > max ? item[key].length : max
   })
   return max
 }
@@ -36,9 +36,9 @@ const _maxLength = function (options, key) {
  * @return {String}
  * @private
  */
-const _makeSpaces = function (keyword, maxLength, pad) {
-  pad = maxLength > 0 ? (pad || 4) : 0
-  return new Array((maxLength - keyword.length) + pad).join(' ')
+const _makeSpaces = function(keyword, maxLength, pad) {
+  pad = maxLength > 0 ? pad || 4 : 0
+  return new Array(maxLength - keyword.length + pad).join(' ')
 }
 
 /**
@@ -49,7 +49,7 @@ const _makeSpaces = function (keyword, maxLength, pad) {
  * @return {String}
  * @private
  */
-const _makeTitle = function (title) {
+const _makeTitle = function(title) {
   return `${colors.yellow(title)}`
 }
 
@@ -61,7 +61,7 @@ const _makeTitle = function (title) {
  * @return {String}    [description]
  * @private
  */
-const _makePacakge = function (values) {
+const _makePacakge = function(values) {
   return `${colors.green(values.name)} version ${colors.yellow(values.version)}`
 }
 
@@ -73,22 +73,28 @@ const _makePacakge = function (values) {
  * @return {String}    [description]
  * @private
  */
-const _makeOptions = function (options, pad) {
+const _makeOptions = function(options, pad) {
   pad = pad || ''
   let optionsString = ''
-  let linebreak = "\n"
+  let linebreak = '\n'
   let x = 0
   const nameLength = _maxLength(options, 'name')
   const abbrvLength = _maxLength(options, 'abbrv')
 
-  options.forEach(function (item) {
+  options.forEach(function(item) {
     x++
-    if(x === options.length) {
+    const name = item.name.split(':').length > 1 ? item.name.split(':')[1] : item.name
+
+    if (x === options.length) {
       linebreak = ''
     }
-    optionsString += item.abbrv ? `${colors.green(item.abbrv)}${_makeSpaces(item.abbrv, abbrvLength, 3)}` : `${_makeSpaces('', abbrvLength, 3)}`
-    optionsString += `${pad}${colors.green(item.name)}`
-    optionsString += item.description ? `${_makeSpaces(item.name, nameLength)} ${item.description}${linebreak}` : linebreak
+    optionsString += item.abbrv
+      ? `${colors.green(item.abbrv)}${_makeSpaces(item.abbrv, abbrvLength, 3)}`
+      : `${_makeSpaces('', abbrvLength, 3)}`
+    optionsString += `${pad}${colors.green(name)}`
+    optionsString += item.description
+      ? `${_makeSpaces(item.name, nameLength)} ${item.description}${linebreak}`
+      : linebreak
   })
 
   return optionsString
@@ -102,13 +108,13 @@ const _makeOptions = function (options, pad) {
  * @return {String}     [description]
  * @private
  */
-const _makeCommands = function (commands) {
+const _makeCommands = function(commands) {
   let groupedCommands = {}
   let commandsString = ''
-  let linebreak = "\n"
+  let linebreak = '\n'
   let x = 0
 
-  commands.forEach(function (command) {
+  commands.forEach(function(command) {
     const namespaces = command.name.split(':')
     if (namespaces.length > 1) {
       groupedCommands[namespaces[0]] = groupedCommands[namespaces[0]] || []
@@ -126,11 +132,12 @@ const _makeCommands = function (commands) {
 
   const groupedCommandsKeys = Object.keys(groupedCommands)
 
-  groupedCommandsKeys.forEach(function (name) {
+  groupedCommandsKeys.forEach(function(name) {
     x++
-    if(x === groupedCommandsKeys.length) {
+    if (x === groupedCommandsKeys.length) {
       linebreak = ''
     }
+
     commandsString += `${_makeTitle(name)}\n`
     commandsString += `${_makeOptions(groupedCommands[name], ' ')}\n${linebreak}`
   })
@@ -145,7 +152,7 @@ const _makeCommands = function (commands) {
  * @return {void}
  * @public
  */
-Help.menu = function (options) {
+Help.menu = function(options) {
   let menuString = ''
 
   // prints package information if passed
@@ -158,7 +165,6 @@ Help.menu = function (options) {
     menuString += `\n\n${_makeTitle('Options')}\n`
     menuString += _makeOptions(options.options)
   }
-
   // list down all global commands is passed
   if (options.commands && options.commands.length) {
     menuString += `\n\n${_makeTitle('Available Commands')}\n`
@@ -175,7 +181,7 @@ Help.menu = function (options) {
  * @return {void}    [description]
  * @public
  */
-Help.commandMenu = function (command) {
+Help.commandMenu = function(command) {
   let commandString = `\n${colors.yellow('Usage')}\n${command.name} [arguments] [options]`
   if (command.arguments && command.arguments.length) {
     commandString += `\n\n${_makeTitle('Arguments')}\n`
